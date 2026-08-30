@@ -12,9 +12,13 @@ Use the following command in a terminal to clone the sample application reposito
 
 # Running via a Docker image:  
 Download the image on docker hub:  
+
 Or run the Dockerfile to create an image:  
 >docker build -t *YOUR_DOCKER_USERNAME*/emotion-detection-image .
 
+As an example, if your username is TinkaiZ, you would run the command:
+>docker build -t TinkaiZ/emotion-detection-image .
 
-
+Once the build has completed, you can view the image by using the following command:
+>docker image ls
 
