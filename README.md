@@ -22,3 +22,10 @@ As an example, if your username is TinkaiZ, you would run the command:
 Once the build has completed, you can view the image by using the following command:
 >docker image ls
 
+```
+{
+  "firstName": "John",
+  "lastName": "Smith",
+  "age": 25
+}
+```
