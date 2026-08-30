@@ -10,7 +10,7 @@ Dependencies: uv pip install -r requirements.txt
 **Option 2:**  
 Download the image on docker hub:  
 Or run the Dockerfile to create an image:  
->docker build .
+>docker build -t emotion-detection-image .
 
 
 
