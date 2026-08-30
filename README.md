@@ -13,7 +13,7 @@ Use the following command in a terminal to clone the sample application reposito
 # Running via a Docker image:  
 Download the image on docker hub:  
 Or run the Dockerfile to create an image:  
->docker build -t emotion-detection-image .
+>docker build -t *YOUR_DOCKER_USERNAME*/emotion-detection-image .
 
 
 
