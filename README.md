@@ -21,8 +21,8 @@ Download the image on docker hub:
 
 Or run the Dockerfile to create an image: 
 ```
->docker build -t *YOUR_DOCKER_USERNAME*/emotion-detection-image
-```.
+docker build -t *YOUR_DOCKER_USERNAME*/emotion-detection-image .
+```
 
 As an example, if your username is TinkaiZ, you would run the command:
 ```
