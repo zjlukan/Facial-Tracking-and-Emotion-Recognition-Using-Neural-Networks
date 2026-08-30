@@ -8,8 +8,9 @@ uv: Python package manager (required for installing dependencies)
 Dependencies: uv pip install -r requirements.txt  
 
 **Option 2:**  
-Run the Dockerfile to create an image:  
-
+Download the image on docker hub:  
+Or run the Dockerfile to create an image:  
+>docker build .
 
 
 
