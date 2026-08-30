@@ -5,8 +5,8 @@ Takes feed from camera and uses a real-time tracking system to isolate the face 
 Python: 3.6+ 
 uv: Python package manager (required for installing dependencies)  
 
-# Installation  
-Use the following command in a terminal to clone the repository:  
+# App installation  
+Use the following command in a terminal to clone the app:  
 ```
 git clone https://github.com/zjlukan/Facial-Tracking-and-Emotion-Recognition-Using-Neural-Networks
 ```
@@ -16,7 +16,7 @@ Installing dependencies:
 uv pip install -r requirements.txt
 ```
 
-# Running via a Docker image:  
+# Running the app via a Docker image:  
 Download the image on docker hub:  
 
 Or run the Dockerfile to create an image: 
@@ -33,4 +33,8 @@ Once the build has completed, you can view the image by using the following comm
 ```
 docker image ls
 ```
+
+---
+
+# Running the training module:  
 
