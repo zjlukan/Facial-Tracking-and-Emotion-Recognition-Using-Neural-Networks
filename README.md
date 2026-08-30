@@ -6,7 +6,7 @@ Python: 3.6+
 uv: Python package manager (required for installing dependencies)  
 
 # Installation  
-Use the following command in a terminal to clone the sample application repository:  
+Use the following command in a terminal to clone the repository:  
 ```
 git clone https://github.com/zjlukan/Facial-Tracking-and-Emotion-Recognition-Using-Neural-Networks
 ```
