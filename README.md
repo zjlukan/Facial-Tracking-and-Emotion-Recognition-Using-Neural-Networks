@@ -1,12 +1,12 @@
 # Features  
-**Main app:**
+**Main app:**  
 Takes feed from camera and uses a real-time tracking system to isolate the face and feed it into a CNN
 
-**Training module:**
+**Training module:**  
 Uses transfer learning on the MobileNetV2 model  
 Visualizes results using a loss curve and confusion matrix
 
-**Parameter optimization:**
+**Parameter optimization:**  
 Uses Bayesian optimization to automatically search for the optimal parameters (learning rate, dropout rate, etc) for the model evaluating it a minimal amount of times  
 Saves the state of the experiment every trial, which can be loaded into optimize_params.py for continued searching  
 It is recommended to use a smaller dataset for parameter search in order to save time before applying these parameters to the final model trained on the full dataset  
