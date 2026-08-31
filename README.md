@@ -31,9 +31,15 @@ Installing dependencies:
 uv pip install -r requirements.txt
 ```
 
+# Running the app from command line  
+Run the following command:
+```
+python3 ./main.py
+```
+
 # Running the app via a Docker image  
 Download the image on docker hub:  
-
+> [link]  
 Or run the Dockerfile to create an image: 
 ```
 docker build -t *YOUR_DOCKER_USERNAME*/emotion-detection-image .
@@ -52,4 +58,23 @@ docker image ls
 ---
 
 # Running the training module   
+Use the following command in a terminal to clone the app: 
+```
+git clone https://github.com/zjlukan/Facial-Tracking-and-Emotion-Recognition-Using-Neural-Networks
+```
 
+Installing dependencies:  
+```
+uv pip install -r requirements-train.txt
+```
+
+# Running the training module from command line  
+To train the model, run the following command:  
+```
+python3 ./train.py num-epochs batch-size learning-rate train-dir test-dir
+```
+
+To run Bayesian optimization parameter search, run the following command:  
+```
+python3 ./optimize_params num-epochs num-trials load-experiment experiment-path
+```
