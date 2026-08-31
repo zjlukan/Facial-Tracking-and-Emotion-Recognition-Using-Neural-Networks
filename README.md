@@ -14,7 +14,7 @@ Saves the state of the experiment every trial to a .json file, which can be load
 It is recommended to use a smaller dataset for parameter search in order to save time before applying these parameters to the final model trained on the full dataset  
 
 # Prerequisites    
-Python: 3.6+ 
+Python: 3.6+  
 uv: Python package manager (required for installing dependencies)  
 
 # App installation  
