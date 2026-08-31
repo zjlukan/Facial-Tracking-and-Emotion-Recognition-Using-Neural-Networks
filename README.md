@@ -5,7 +5,7 @@
 
 **Training module:**  
 \*Uses transfer learning on the pre-trained MobileNetV2 model:  
->https://pytorch.org/hub/pytorch_vision_mobilenet_v2/
+>https://pytorch.org/hub/pytorch_vision_mobilenet_v2/  
 \*Visualizes results using a loss curve and confusion matrix  
 \*Device-agnostic code (utilizes Cuda if available)  
 
