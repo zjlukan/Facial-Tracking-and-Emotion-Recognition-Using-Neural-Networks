@@ -39,7 +39,7 @@ python3 ./main.py
 
 # Running the app via a Docker image  
 Download the image on docker hub:  
-> [link]  
+> link  
 Or run the Dockerfile to create an image: 
 ```
 docker build -t *YOUR_DOCKER_USERNAME*/emotion-detection-image .
