@@ -1,7 +1,7 @@
 # Features  
 **Main app:**  
-*Takes feed from camera and uses a real-time tracking system to isolate the face and feed it into a CNN for classification  
-*Runs locally in the browser using NiceGUI interface
+* Takes feed from camera and uses a real-time tracking system to isolate the face and feed it into a CNN for classification  
+* Runs locally in the browser using NiceGUI interface
 
 **Training module:**  
 * Uses transfer learning on the pre-trained MobileNetV2 model:  
