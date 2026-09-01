@@ -77,5 +77,8 @@ python3 ./train.py num-epochs batch-size learning-rate train-dir test-dir
 
 To run Bayesian optimization parameter search, run the following command:  
 ```
-python3 ./optimize_params num-epochs num-trials load-experiment experiment-path
+python3 ./optimize_params [--num-epochs NUM_EPOCHS] [--num-trials NUM_TRIALS] [--load] [--load_path LOAD_PATH] [--train_dir TRAIN_DIR] [--test_dir TEST_DIR]
 ```
+* num_epochs: the number of epoch that the model will train for each trial, 30 by default
+* num_trials: the number of iterations to run the parameter optimization, 5 by default
+* load: use this to indicate that you want to load an experiment from file
