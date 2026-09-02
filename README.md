@@ -66,7 +66,7 @@ git clone https://github.com/zjlukan/Facial-Tracking-and-Emotion-Recognition-Usi
 
 Installing dependencies:  
 ```
-uv pip install -r requirements-train.txt
+uv pip install -r requirements_train.txt
 ```
 
 # Running the training module from command line  
