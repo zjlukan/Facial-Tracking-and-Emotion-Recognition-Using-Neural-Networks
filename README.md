@@ -72,13 +72,22 @@ uv pip install -r requirements-train.txt
 # Running the training module from command line  
 To train the model, run the following command:  
 ```
-python3 ./train.py num-epochs batch-size learning-rate train-dir test-dir
+python3 ./train.py [--num-epochs NUM_EPOCHS] [--batch_size BATCH_SIZE] [--lr LR] [--dropout DROPOUT] [--momentum MOMENTUM] [--L2_reg L2_REG] [--optimizer OPTIMIZER] [--train_dir TRAIN_DIR] [--test_dir TEST_DIR]
 ```
+* num_epochs: the number of epoch that the model will train for, 50 by default
+* batch_size:
+* lr: learning rate
+* 
+* train_dir: the path to the directory containing training data  
+* train_dir: the path to the directory containing testing data
 
 To run Bayesian optimization parameter search, run the following command:  
 ```
 python3 ./optimize_params [--num-epochs NUM_EPOCHS] [--num-trials NUM_TRIALS] [--load] [--load_path LOAD_PATH] [--train_dir TRAIN_DIR] [--test_dir TEST_DIR]
 ```
-* num_epochs: the number of epoch that the model will train for each trial, 30 by default
-* num_trials: the number of iterations to run the parameter optimization, 5 by default
-* load: use this to indicate that you want to load an experiment from file
+* num_epochs: the number of epoch that the model will train for each trial, 30 by default  
+* num_trials: the number of iterations to run the parameter optimization, 5 by default  
+* load: use this to indicate that you want to load an experiment from file  
+* load_path: the path to a .json file containing the experiment state to be loaded  
+* train_dir: the path to the directory containing training data  
+* train_dir: the path to the directory containing testing data
