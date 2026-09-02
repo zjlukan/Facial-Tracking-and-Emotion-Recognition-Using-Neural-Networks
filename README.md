@@ -1,7 +1,7 @@
 # Features  
 **Main app:**  
 * Takes feed from camera and uses a real-time tracking system to isolate the face and feed it into a CNN for classification  
-* Runs locally in the browser using NiceGUI interface
+* Runs locally in the browser using FastAPI with a NiceGUI interface
 
 **Training module:**  
 * Uses transfer learning on the pre-trained MobileNetV2 model:  
@@ -10,11 +10,11 @@
 * Device-agnostic code (utilizes Cuda if available)  
 
 **Parameter optimization:**  
-* Uses Bayesian optimization to automatically search for the optimal parameters (learning rate, dropout rate, etc) for the model evaluating it a minimal amount of times  
+* Uses Ax to implement Bayesian optimization
+* Automatically searches for the optimal parameters (learning rate, dropout rate, etc) for the model evaluating it a minimal amount of times  
 * Saves the state of the experiment every trial to a .json file, which can be loaded into optimize_params.py for continued searching  
 * Uses the mean test loss over the last 5 trials as evaluation metric  
-* Utilizes trial-level early stopping to terminate the training of unpromising models  
-* It is recommended to use a smaller dataset for parameter search in order to save time before applying these parameters to the final model trained on the full dataset  
+* Utilizes trial-level early stopping to terminate the training of unpromising models    
 
 # Prerequisites    
 Python: 3.6+  
@@ -90,4 +90,6 @@ python3 ./optimize_params [--num-epochs NUM_EPOCHS] [--num-trials NUM_TRIALS] [-
 * load: use this to indicate that you want to load an experiment from file  
 * load_path: the path to a .json file containing the experiment state to be loaded  
 * train_dir: the path to the directory containing training data  
-* train_dir: the path to the directory containing testing data
+* train_dir: the path to the directory containing testing data  
+
+It is recommended to use a smaller dataset for parameter search in order to save time before applying these parameters to the final model trained on the full dataset
