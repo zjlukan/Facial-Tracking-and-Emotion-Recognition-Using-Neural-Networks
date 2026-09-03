@@ -38,13 +38,13 @@ Run the following command:
 python3 ./main.py
 ```
 
-# Running the app via a Docker image  
+# Running the app via a Docker image (recommended) 
 Download the image on docker hub:  
 > link
 
 Or run the Dockerfile to create an image: 
 ```
-docker build -t *YOUR_DOCKER_USERNAME*/emotion-detection-image .
+docker build -t YOUR_DOCKER_USERNAME/emotion-detection-image .
 ```
 
 As an example, if your username is TinkaiZ, you would run the command:
@@ -59,7 +59,7 @@ docker image ls
 
 To run the image once it has been downloaded:
 ```
-docker run -d -p 8080:8080 --name nicegui comeback77/emotion-detection-image:latest 
+docker run -d -p 8080:8080 --name nicegui YOUR_DOCKER_USERNAME/emotion-detection-image:latest 
 ```
 
 ---
