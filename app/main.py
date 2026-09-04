@@ -4,11 +4,43 @@ import signal
 import cv2
 import numpy as np
 from fastapi import Response
+from fastapi import Request
 import torch
 import torchvision
 from torchvision import transforms
 from nicegui import Client, app, core, run, ui
 from pathlib import Path
+
+# initialize global variables for use in coroutine functions
+latest_frame = None
+frame_count = 0
+detected = False
+tracker = None
+loaded_model = None
+face_cascade = None
+
+# in case you don't have a webcam, this will provide a black placeholder image.
+black_1px = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAA1JREFUGFdjYGBg+A8AAQQBAHAgZQsAAAAASUVORK5CYII='
+placeholder = Response(content=base64.b64decode(black_1px.encode('ascii')), media_type='image/png')
+
+# get the transforms required for data to be processed by MobileNetV2
+weights = torchvision.models.MobileNet_V2_Weights.DEFAULT
+auto_transform = weights.transforms()
+class_names = ["angry", "happy", "neutral", "sad"]
+
+
+@app.post('/video/upload')
+async def upload_frame(request: Request):
+    global latest_frame
+
+    data = await request.body()
+
+    frame = np.frombuffer(data, dtype=np.uint8)
+    frame = cv2.imdecode(frame, cv2.IMREAD_COLOR)
+
+    latest_frame = frame
+
+    return {'status': 'ok'}
 
 
 def load_model(
@@ -25,21 +57,6 @@ def load_model(
     model.load_state_dict(torch.load(f=model_path))
 
     return model
-
-# initialize global variables for use in coroutine functions
-frame_count = 0
-detected = False
-tracker = None
-loaded_model = None
-
-# in case you don't have a webcam, this will provide a black placeholder image.
-black_1px = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAA1JREFUGFdjYGBg+A8AAQQBAHAgZQsAAAAASUVORK5CYII='
-placeholder = Response(content=base64.b64decode(black_1px.encode('ascii')), media_type='image/png')
-
-# get the transforms required for data to be processed by MobileNetV2
-weights = torchvision.models.MobileNet_V2_Weights.DEFAULT
-auto_transform = weights.transforms()
-class_names = ["angry", "happy", "neutral", "sad"]
 
 
 def read_face(image, box, detected, model):
@@ -117,9 +134,8 @@ def convert(frame: np.ndarray) -> bytes:
 def setup() -> None:
     global tracker
     global loaded_model
-
-    # OpenCV is used to access the webcam.
-    video_capture = cv2.VideoCapture(0)
+    global latest_frame
+    global face_cascade
 
     # create an MNV2 model and load the saved state from the trained model
     loaded_model = torchvision.models.mobilenet_v2()
@@ -132,8 +148,8 @@ def setup() -> None:
 
     # load the cascade classifier for face detection
     face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
-    still_frames, f = video_capture.read()
-    if still_frames:
+    if latest_frame is not None:
+        f = latest_frame.copy()
         # convert to grayscale, locate face using classifier
         frame_gray = cv2.cvtColor(f, cv2.COLOR_BGR2GRAY)
         face = face_cascade.detectMultiScale(frame_gray, 1.3, 5)
@@ -151,18 +167,15 @@ def setup() -> None:
         global detected
         global tracker
         global loaded_model
+        global latest_frame
+        global face_cascade
 
         frame_count = frame_count + 1
-
         # return placeholder image if webcam cannot be opened or if video capture cannot be read
-        if not video_capture.isOpened():
+        if latest_frame is None:
             return placeholder
 
-        # The `video_capture.read` call is a blocking function.
-        # So we run it in a separate thread (default executor) to avoid blocking the event loop.
-        _, f = await run.io_bound(video_capture.read)
-        if f is None:
-            return placeholder
+        f = latest_frame.copy()
         s = False
         box = []
         # use a tracker instead of a classifier if possible, to optimize speed
@@ -194,14 +207,82 @@ def setup() -> None:
             img = await run.cpu_bound(convert, img)
             return Response(content=img, media_type="image/jpeg")
 
-
-
     @ui.page('/')
     def page():
-        # For non-flickering image updates and automatic bandwidth adaptation an interactive image is much better than `ui.image()`.
-        video_image = ui.interactive_image('/video/frame').classes('w-full h-full')
-        # A timer constantly updates the source of the image.
-        ui.timer(interval=0.1, callback=video_image.force_reload)
+
+        ui.add_body_html("""
+        <video id="webcam"
+               autoplay
+               playsinline
+               style="display:none">
+        </video>
+
+        <canvas id="capture"
+                style="display:none">
+        </canvas>
+
+        <script>
+        async function startCamera() {
+
+            const stream =
+                await navigator.mediaDevices.getUserMedia({
+                    video: true
+                });
+
+            const video =
+                document.getElementById('webcam');
+
+            const canvas =
+                document.getElementById('capture');
+
+            const ctx =
+                canvas.getContext('2d');
+
+            video.srcObject = stream;
+
+            setInterval(async () => {
+
+                if (video.videoWidth === 0)
+                    return;
+
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+
+                ctx.drawImage(
+                    video,
+                    0,
+                    0
+                );
+
+                canvas.toBlob(async blob => {
+
+                    if (!blob) return;
+
+                    await fetch(
+                        '/video/upload',
+                        {
+                            method: 'POST',
+                            body: blob
+                        }
+                    );
+
+                }, 'image/jpeg', 0.8);
+
+            }, 100);
+        }
+
+        startCamera();
+        </script>
+        """)
+
+        processed = ui.interactive_image(
+            '/video/frame'
+        ).classes('w-full')
+
+        ui.timer(
+            0.1,
+            processed.force_reload
+        )
 
     async def disconnect() -> None:
         """Disconnect all clients from current running server."""
@@ -218,8 +299,6 @@ def setup() -> None:
         # This prevents ugly stack traces when auto-reloading on code change,
         # because otherwise disconnected clients try to reconnect to the newly started server.
         await disconnect()
-        # Release the webcam hardware, so it can be used by other applications again.
-        video_capture.release()
 
     app.on_shutdown(cleanup)
     # We also need to disconnect clients when the app is stopped with Ctrl+C,
