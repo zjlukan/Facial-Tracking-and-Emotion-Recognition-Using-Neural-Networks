@@ -40,7 +40,7 @@ python3 ./main.py
 
 # Running the app via a Docker image (recommended) 
 Download the image on docker hub:  
-> link
+> docker.io/comeback77/emotion-detection-image:latest
 
 Or run the Dockerfile to create an image: 
 ```
