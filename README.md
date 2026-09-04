@@ -59,7 +59,7 @@ docker image ls
 
 To run the image once it has been downloaded:
 ```
-docker run -d -p 8080:8080 --name nicegui YOUR_DOCKER_USERNAME/emotion-detection-image:latest 
+docker run -p 8080:8080 YOUR_DOCKER_USERNAME/emotion-detection-image:latest 
 ```
 
 ---
