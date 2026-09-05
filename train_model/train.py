@@ -7,53 +7,36 @@ import data_setup, engine, utils
 import torchvision
 import visualize_results
 import cv2
+import argparse
+
+# parse command line arguments
+parser = argparse.ArgumentParser()
+parser.add_argument("--num_epochs", default=50)
+parser.add_argument("--batch_size", default=32)
+parser.add_argument("--lr", default=0.001)
+parser.add_argument("--dropout", default=0.2)
+parser.add_argument("--momentum", default=0.001)
+parser.add_argument("--L2_reg", default=0.001)
+parser.add_argument("--optimizer", default="Adam")
+parser.add_argument("--train_dir", default="train")
+parser.add_argument("--test dir", default="test")
+
+args = parser.parse_args()
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
 torch.manual_seed(12)
 
-'''
-if len(sys.argv) < 6:
-    raise TypeError("Not enough arguments!")
-
-NUM_EPOCHS = int(sys.argv[1])
-BATCH_SIZE = int(sys.argv[2])
-HIDDEN_UNITS = int(sys.argv[3])
-LEARNING_RATE = float(sys.argv[4])
-
-data_path = Path(sys.argv[5])
-image_path = data_path / "face_emotions"
-
-if image_path.is_dir():
-    print(f"{image_path} directory exists.")
-else:
-    print(f"Did not find {image_path} directory, creating one...")
-    image_path.mkdir(parents=True, exist_ok=True)
-
-    # Download data
-    with open(data_path / "face_emotions.zip", "wb") as f:
-        request = requests.get("https://github.com/zjlukan/Facial-Tracking-and-Emotion-Recognition-Using-Neural-Networks/blob/main/data/face_emotions_20%25.zip")
-        print("Downloading face emotions data...")
-        f.write(request.content)
-
-    # Unzip pizza, steak, sushi data
-    with zipfile.ZipFile(data_path / "face_emotions.zip", "r") as zip_ref:
-        print("Unzipping face emotions data...")
-        zip_ref.extractall(image_path)
-
-    # Remove .zip file
-    os.remove(data_path / "face_emotions.zip")
-    
-'''
-
-NUM_EPOCHS = 10
-BATCH_SIZE = 64
-LEARNING_RATE = 0.001
+NUM_EPOCHS = args.num_epochs
+BATCH_SIZE = args.batch_size
+LEARNING_RATE = args.lr
+MOMENTUM = args.momentum
+L2_REG = args.L2_reg
 
 t1 = cv2.getTickCount()
 
-train_dir = "smaller_dataset/train"
-test_dir = "smaller_dataset/test"
+train_dir = args.train_dir
+test_dir = args.test_dir
 
 # get the pretrained weights and the transforms required for data to processed by the model
 weights = torchvision.models.MobileNet_V2_Weights.DEFAULT
@@ -78,7 +61,7 @@ for param in MNV2_model.features.parameters():
 
 # set the hyperparameters for the model and change the number of output features to fit the data
 MNV2_model.classifier = torch.nn.Sequential(
-        torch.nn.Dropout(p=0.2, inplace=True),
+        torch.nn.Dropout(p=args.dropout, inplace=True),
         torch.nn.Linear(in_features=1280,
                         out_features=len(class_names),  # same number of output units as our number of classes
                         bias=True)).to(device)
@@ -93,8 +76,31 @@ optim = torch.optim.Adam(
         betas=(0.9, 0.999),  # Coefficients for running averages of gradient and its square
         eps=1e-8,  # Term for numerical stability
         weight_decay=0,  # L2 penalty (regularization)
-        amsgrad=False  # Use AMSGrad variant
+        amsgrad=False,  # Use AMSGrad variant
     )
+
+if args.optimizer == "SGD":  # use Stochastic Gradient Descent optimizer
+    optim = torch.optim.SGD(
+        params=MNV2_model.parameters(),
+        lr=LEARNING_RATE,
+        momentum=MOMENTUM,
+        weight_decay=L2_REG
+    )
+elif args.optimizer == "Adam":  # use Adam optimizer
+    optim = torch.optim.Adam(
+        params=MNV2_model.parameters(),
+        lr=LEARNING_RATE,
+        weight_decay=L2_REG
+    )
+elif args.optimizer == "RMSprop":
+    optim = torch.optim.RMSprop(  # use Root Mean Square Propagation optimizer
+        params=MNV2_model.parameters(),
+        lr=LEARNING_RATE,
+        momentum=MOMENTUM,
+        weight_decay=L2_REG
+    )
+else:
+    raise ValueError("optimizer argument must be one of: 'Adam', 'RMSprop', or 'SGD'")
 
 print("INFO:    Model created successfully, starting training...")
 

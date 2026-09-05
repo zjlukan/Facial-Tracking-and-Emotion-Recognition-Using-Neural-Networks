@@ -5,6 +5,7 @@ import torch
 from torchmetrics import ConfusionMatrix
 from mlxtend.plotting import plot_confusion_matrix
 import matplotlib.pyplot as plt
+import math
 
 
 def plot_confusion_mat(model: torch.nn.Module, test_dl: torch.utils.data.DataLoader,
@@ -68,3 +69,45 @@ def plot_loss_curve(res: dict[str, list[float]], epochs: range):
     plt.legend()
 
     plt.show()
+
+
+def plot_optim(
+        evaluations: list,
+        params: list,
+        param_names: list,
+        trials: range
+):
+    """
+    Displays multiple graphs. The first graph shows the evaluation metric of the model over every trial; the other
+    graphs show the value of each parameter over each trial
+    :param evaluations: a list of values where evaluations[i] corresponds to the value of the evaluation metric on the
+    ith trial
+    :param params: a 2d list where params[i][j] contains the value of the ith parameter for the jth trial
+    :param param_names: a list of names for each parameter in string form
+    :param trials: the range of trials to display
+    """
+
+    # calculate how many rows and columns are needed based on how many parameters are passed
+    plt.figure(figsize=(15, 7))
+    n = len(params) + 1
+    r = int(math.sqrt(n))
+    c = int(n/float(r) + 1)
+
+    # plot the evaluation metric
+    plt.subplot(r, c, 1)
+    plt.plot(trials, evaluations, label="Last 5 Mean Test Loss")
+    plt.title("Evaluations")
+    plt.xlabel("Trials")
+
+    # plot each parameter
+    for idx in range(1, n):
+        plt.subplot(r, c, idx)
+        plt.plot(trials, params[idx-1], label=param_names[idx-1])
+        plt.title(param_names[idx-1])
+        plt.xlabel("Trials")
+
+    # adjust spacing
+    plt.subplots_adjust(hspace=0.3, wspace=0.5)
+
+    plt.show()
+
