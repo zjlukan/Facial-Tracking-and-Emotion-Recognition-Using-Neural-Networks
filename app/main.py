@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import base64
 import signal
+import time
 import cv2
 import numpy as np
 from fastapi import Response
@@ -28,6 +29,43 @@ weights = torchvision.models.MobileNet_V2_Weights.DEFAULT
 auto_transform = weights.transforms()
 class_names = ["angry", "happy", "neutral", "sad"]
 
+# most recent per-class confidence (in percent), in the same order as class_names.
+# All zeros when no face is detected.
+latest_probs = [0.0] * len(class_names)
+
+
+class FPSCounter:
+    """Smoothed rate (exponential moving average) at which `tick()` is called."""
+
+    def __init__(self, smoothing: float = 0.9, stale_after: float = 2.0):
+        self.smoothing = smoothing
+        self.stale_after = stale_after
+        self.last = None
+        self._fps = 0.0
+
+    def tick(self) -> None:
+        now = time.perf_counter()
+        if self.last is not None:
+            dt = now - self.last
+            if dt > 0:
+                instant = 1.0 / dt
+                if self._fps == 0.0:
+                    self._fps = instant
+                else:
+                    self._fps = self.smoothing * self._fps + (1 - self.smoothing) * instant
+        self.last = now
+
+    @property
+    def fps(self) -> float:
+        # report 0 if the stream has stopped, instead of showing a stale number
+        if self.last is None or time.perf_counter() - self.last > self.stale_after:
+            return 0.0
+        return self._fps
+
+
+camera_fps = FPSCounter()   # how fast the browser is uploading webcam frames
+display_fps = FPSCounter()  # how fast processed frames are being served back
+
 
 @app.post('/video/upload')
 async def upload_frame(request: Request):
@@ -39,6 +77,7 @@ async def upload_frame(request: Request):
     frame = cv2.imdecode(frame, cv2.IMREAD_COLOR)
 
     latest_frame = frame
+    camera_fps.tick()
 
     return {'status': 'ok'}
 
@@ -62,18 +101,21 @@ def load_model(
 def read_face(image, box, detected, model):
     """
     Given the bounding box of the face, write the bounding box and the emotion to the screen. If not face detected,
-    write "No face detected!"
+    write "No face detected!". Also updates the global `latest_probs` with the per-class confidence.
     :param model: a loaded model that is of class nn.Module
     :param detected: indicates if a face was detected in this frame
     :param image: a 3-channel image
     :param box: bounding box in the format [x, y, width, height] (or [] if the face is not detected)
     :return: a 3-channel openCV image
     """
+    global latest_probs
+
     if len(box) == 1:
         box = box[0]
 
     # display text if no face detected
     if not detected:
+        latest_probs = [0.0] * len(class_names)
         cv2.putText(
             image,
             "No face detected!",
@@ -108,8 +150,12 @@ def read_face(image, box, detected, model):
         model.eval()
         with torch.inference_mode():
             pred = model(transformed_img)
-            class_pred = torch.argmax(torch.softmax(pred, dim=1), dim=1)
-            idx = class_pred.item()
+            probs = torch.softmax(pred, dim=1)
+            idx = int(torch.argmax(probs, dim=1).item())
+
+        # store the confidence of every class (as a percentage) for the bar graph
+        latest_probs = (probs[0] * 100).tolist()
+
         cv2.putText(image, str(class_names[idx]), (20, 40),
                     cv2.FONT_HERSHEY_SIMPLEX,
                     1.5,
@@ -174,6 +220,8 @@ def setup() -> None:
         # return placeholder image if webcam cannot be opened or if video capture cannot be read
         if latest_frame is None:
             return placeholder
+
+        display_fps.tick()
 
         f = latest_frame.copy()
         s = False
@@ -283,6 +331,32 @@ def setup() -> None:
             0.1,
             processed.force_reload
         )
+
+        # --- stats panel: FPS indicator + per-class confidence bar graph ---
+        with ui.column().classes('w-full items-center gap-1'):
+            fps_label = ui.label('Camera: -- fps  |  Processed: -- fps').classes('text-base font-mono')
+            ui.label('Confidence (%)').classes('text-sm text-gray-500')
+            confidence_chart = ui.echart({
+                'animation': False,
+                'grid': {'left': 40, 'right': 10, 'top': 25, 'bottom': 25},
+                'xAxis': {'type': 'category', 'data': class_names},
+                'yAxis': {'type': 'value', 'min': 0, 'max': 100},
+                'series': [{
+                    'type': 'bar',
+                    'data': [0.0] * len(class_names),
+                    'colorBy': 'data',
+                    'label': {'show': True, 'position': 'top'},
+                }],
+            }).classes('w-72 h-48')
+
+        def update_stats() -> None:
+            fps_label.set_text(
+                f'Camera: {camera_fps.fps:.1f} fps  |  Processed: {display_fps.fps:.1f} fps'
+            )
+            confidence_chart.options['series'][0]['data'] = [round(p, 1) for p in latest_probs]
+            confidence_chart.update()
+
+        ui.timer(0.2, update_stats)
 
     async def disconnect() -> None:
         """Disconnect all clients from current running server."""
