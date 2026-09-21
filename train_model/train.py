@@ -19,7 +19,7 @@ parser.add_argument("--momentum", default=0.001)
 parser.add_argument("--L2_reg", default=0.001)
 parser.add_argument("--optimizer", default="Adam")
 parser.add_argument("--train_dir", default="train")
-parser.add_argument("--test dir", default="test")
+parser.add_argument("--test_dir", default="test")
 
 args = parser.parse_args()
 
