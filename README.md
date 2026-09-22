@@ -79,7 +79,7 @@ uv pip install -r requirements_train.txt
 # Running the training module from command line  
 To train the model, run the following command:  
 ```
-python3 ./train.py [--num-epochs NUM_EPOCHS] [--batch_size BATCH_SIZE] [--lr LR] [--dropout DROPOUT] [--momentum MOMENTUM] [--L2_reg L2_REG] [--optimizer OPTIMIZER] [--train_dir TRAIN_DIR] [--test_dir TEST_DIR]
+python3 ./train.py [--num-epochs NUM_EPOCHS] [--batch_size BATCH_SIZE] [--lr LR] [--dropout DROPOUT] [--momentum MOMENTUM] [--L2_reg L2_REG] [--optimizer OPTIMIZER] [--data_aug] [--train_dir TRAIN_DIR] [--test_dir TEST_DIR]
 ```
 * num_epochs: the number of epoch that the model will train for, 50 by default
 * batch_size: the number of samples per gradient update, 32 by default
@@ -88,6 +88,7 @@ python3 ./train.py [--num-epochs NUM_EPOCHS] [--batch_size BATCH_SIZE] [--lr LR]
 * momentum: momentum factor for optimizers like SGD, 0.001 by default
 * L2_reg: L2 regularization strength (weight decay coefficient), 0.001 by default
 * optimizer: optimization algorithm to use (e.g., 'Adam', 'SGD', 'RMSprop'), 'Adam' by default
+* data_aug: whether to use data augmentation, false by default
 * train_dir: the path to the directory containing training data, 'train' by default
 * test_dir: the path to the directory containing testing data, 'test' by default
 
