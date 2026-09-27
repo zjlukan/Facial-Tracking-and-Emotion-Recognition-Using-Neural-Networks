@@ -7,7 +7,8 @@
 **Training module:**  
 * Uses PyTorch to preform transfer learning on the pre-trained MobileNetV2 model:  
 >https://pytorch.org/hub/pytorch_vision_mobilenet_v2/
-* All of the parameters in the "features" section are gradient frozen
+* All of the parameters in the "features" section except for the last 5 layers are gradient frozen
+* The classifier is set to train with a learning rate 10x faster than the backbone layers
 * Visualizes results using a loss curve and confusion matrix  
 * Device-agnostic code (utilizes Cuda if available)  
 
